@@ -1,3 +1,4 @@
+import json
 import os.path
 
 import markdown
@@ -49,13 +50,16 @@ for filepath in md_file_paths:
 
     # Generate portfolio HTML based on posts
     try:
-        with open(filepath.replace(".md", ".description"), 'r') as f:
-            description = f.read()
-    except FileNotFoundError:
-        description = ""
+        with open(filepath.replace(".md", ".json"), 'r') as f:
+            properties = json.load(f)
+    except FileNotFoundError as ex:
+        print("Error:", ex)
+        properties = {"title": filename.replace(".md", ""), "description": "", "image_path": ""}
+
     portfolio_html += "\n" + index_post_template.render(href=html_filepath.replace("../", ""),
-                                                        post_title=filename.replace(".md", ""),
-                                                        post_description=description)
+                                                        post_title=properties["title"],
+                                                        post_description=properties["description"],
+                                                        image_path=properties["image_path"])
 
 # Generate main website
 with open('../../index.html', 'w') as f:
