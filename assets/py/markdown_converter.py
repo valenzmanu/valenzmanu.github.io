@@ -1,3 +1,4 @@
+import json
 import os.path
 
 import markdown
@@ -32,8 +33,10 @@ markdown_template = env.get_template('post_template.html')
 index_post_template = env.get_template('index_post_template.html')
 index_template = env.get_template('index_template.html')
 
-# Generate all posts
-portfolio_html = ""
+# Generate Info Section
+
+# Generate Project Section
+projects_html = ""
 for filepath in md_file_paths:
     if not filepath.endswith(".md"):
         continue
@@ -49,14 +52,17 @@ for filepath in md_file_paths:
 
     # Generate portfolio HTML based on posts
     try:
-        with open(filepath.replace(".md", ".description"), 'r') as f:
-            description = f.read()
-    except FileNotFoundError:
-        description = ""
-    portfolio_html += "\n" + index_post_template.render(href=html_filepath.replace("../", ""),
-                                                        post_title=filename.replace(".md", ""),
-                                                        post_description=description)
+        with open(filepath.replace(".md", ".json"), 'r') as f:
+            properties = json.load(f)
+    except FileNotFoundError as ex:
+        print("Error:", ex)
+        properties = {"title": filename.replace(".md", ""), "description": "", "image_path": ""}
+
+    projects_html += "\n" + index_post_template.render(href=html_filepath.replace("../", ""),
+                                                       post_title=properties["title"],
+                                                       post_description=properties["description"],
+                                                       image_path=properties["image_path"])
 
 # Generate main website
 with open('../../index.html', 'w') as f:
-    f.write(index_template.render(portfolio=portfolio_html))
+    f.write(index_template.render(portfolio=projects_html))
